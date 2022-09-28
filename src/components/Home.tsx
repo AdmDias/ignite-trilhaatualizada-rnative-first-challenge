@@ -8,27 +8,58 @@ import { TaskCount } from "./TaskCount";
 
 import Plus from '../assets/plus.svg'
 import Clipboard from '../assets/clipboard.svg'
+import { Input } from "./Input";
+//import { useTask } from "../hooks/useTask";
 
 export function Home() {
-    const [tasks, setTasks] = useState<TaskCardProps[]>([])
+    //const { tasks, isRender, handleNewTask } = useTask()
+
     const [taskDescription, setTaskDescription] = useState('')
+    const [tasks, setTasks] = useState<TaskCardProps[]>([])
+    const [isRender, setIsRender] = useState(false)
 
-
-    function handleNewTask() {
+    function handleNewTask(taskDescription: string) {
         if (!taskDescription) {
             return Alert.alert('Tarefa', 'Informe a descrição da tarefa!')
         }
 
         const newUserTask = {
-            createdAt: new Date().toString(),
-            description: taskDescription,
+            createdAt: new Date(),
+            description: taskDescription.trim(),
             isTaskDone: false
         } as TaskCardProps
 
         setTasks([...tasks, newUserTask])
+        setTaskDescription('')
     }
 
-    function handleRemoveTask(createdAt: string) {
+    function handleFinishTask(createdAt: Date) {
+        const newData = tasks.map(item => {
+            if (item.createdAt === createdAt){
+                item.isTaskDone = !item.isTaskDone
+                return item
+            }
+            return item
+        })
+
+        setTasks(newData)
+        setIsRender(!isRender)
+    }
+
+    function handleEditTask(createdAt: Date, taskDescriptionEdited: string){
+        const newData = tasks.map(item => {
+            if (item.createdAt === createdAt){
+                item.description = taskDescriptionEdited
+                return item
+            }
+            return item
+        })
+
+        setTasks(newData)
+        setIsRender(!isRender)
+    }
+
+    function handleRemoveTask(createdAt: Date) {
         setTasks(tasks.filter(item => item.createdAt !== createdAt))
     }
 
@@ -43,18 +74,16 @@ export function Home() {
                 <View
                     style={styles.fieldset}
                 >
-                    <TextInput 
-                        style={styles.input}
-                        placeholderTextColor={theme.colors.gray[300]}
+                    <Input
                         placeholder='Adicione um nova tarefa...'
-                        numberOfLines={1}
+                        value={taskDescription}
                         onChangeText={setTaskDescription}
-                        //onLayout={({ nativeEvent }) => console.log(nativeEvent.layout.width)}
+                        numberOfLines={1}
                     />
                     <TouchableOpacity
                         activeOpacity={0.8}
                         style={styles.btnAdd}
-                        onPress={handleNewTask}
+                        onPress={() => handleNewTask(taskDescription)}
                     >
                         <Plus />
                     </TouchableOpacity>
@@ -67,25 +96,26 @@ export function Home() {
                     >
                         <TaskCount 
                             status="created"
-                            counts={0}
+                            counts={tasks.length}
                         />
 
                         <TaskCount 
                             status="done"
-                            counts={0}
+                            counts={tasks.filter(item => item.isTaskDone).length}
                         />
                     </View>
 
                     <FlatList 
                         data={tasks}
-                        keyExtractor={(item) => item.createdAt}
+                        keyExtractor={(item) => item.createdAt.toString()}
                         renderItem={({item}) => (
                             <TaskCard 
                                 data={item}
+                                onFinishTask={handleFinishTask}
+                                onEditTask={handleEditTask}
                                 onRemoveTask={handleRemoveTask}
                             />
                         )}
-                        //renderItem={null}
                         ListEmptyComponent={
                             <View
                                 style={styles.emptyList}
@@ -103,6 +133,7 @@ export function Home() {
                                 </Text>
                             </View>
                         }
+                        extraData={isRender}
                     />
                 </View>
             </View>
@@ -125,16 +156,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: 'transparent', 
-    },
-    input: {
-        width: 288,
-        padding: 16,
-        fontSize: 16,
-        borderWidth: 1,
-        borderRadius: 6,
-        color: theme.colors.gray[100],
-        borderColor: theme.colors.gray[700],
-        backgroundColor: theme.colors.gray[500],
     },
     btnAdd: {
         marginLeft: 4,

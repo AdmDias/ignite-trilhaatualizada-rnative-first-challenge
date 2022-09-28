@@ -36,7 +36,6 @@ const styles = StyleSheet.create({
     status: {
         fontSize: 16,
         fontWeight: 'bold'
-        //fontFamily: ''
     },
     counts: {
         marginLeft: 4,

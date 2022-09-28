@@ -1,4 +1,6 @@
-import { StyleSheet, TouchableOpacity, View, Text } from "react-native";
+import { useState } from 'react'
+import { StyleSheet, TouchableOpacity, View, Text, Alert } from "react-native";
+import { Modal } from "./Modal";
 
 import Trash from '../assets/trash.svg'
 import Checked from '../assets/checked.svg'
@@ -7,44 +9,73 @@ import Unchecked from '../assets/unchecked.svg'
 import { theme } from "../styles/theme";
 
 export interface TaskCardProps {
-    createdAt: string;
+    createdAt: Date;
     description: string;
     isTaskDone: boolean;
-    //setIsTaskDone: (status: boolean) => void;
 }
 
 interface TaskCardData {
     data: TaskCardProps;
-    onRemoveTask: (createdAt: string) => void;
+    onFinishTask: (createdAt : Date) => void;
+    onEditTask: (createdAt: Date, taskDescription: string) => void;
+    onRemoveTask: (createdAt: Date) => void;
 }
 
-export function TaskCard({ data, onRemoveTask }: TaskCardData) {
+export function TaskCard({ data, onFinishTask, onEditTask ,onRemoveTask }: TaskCardData) {
+    const [modalVisibility, setModalVisibility] = useState(false)
+
+    const handleModalShow = () => setModalVisibility(true)
+
     return (
         <View
             style={styles.card}
-            //onLayout={({ nativeEvent }) => console.log(nativeEvent.layout.height)}
         >
             <TouchableOpacity
                 style={styles.statusTask}
-                //onPress={() => data.setIsTaskDone(!isTaskDone)}
+                onPress={() => onFinishTask(data.createdAt)}
             >
                 {
                     !data.isTaskDone ? <Checked /> : <Unchecked />
                 }
             </TouchableOpacity>
 
-            <Text
+            <TouchableOpacity
                 style={styles.description}
+                onPress={handleModalShow}
             >
-                { data.description }
-            </Text>
+                <Text
+                    style={{
+                        color: data.isTaskDone ? theme.colors.gray[300] : theme.colors.gray[100],
+                        textDecorationLine: data.isTaskDone ? 'line-through' : 'none',
+                    }}
+                >
+                    { data.description }
+                </Text>
+            </TouchableOpacity>
+           
 
             <TouchableOpacity
                 style={styles.btnRemoveTask}
-                onPress={() => onRemoveTask(data.createdAt)}
+                onPress={() => {
+                    Alert.alert(
+                        'Tarefa', 
+                        'Remover tarefa da sua lista?', 
+                        [
+                            { text: 'Sim', onPress: () => onRemoveTask(data.createdAt) },
+                            { text: 'Não', style: 'cancel' }
+                        ], 
+                    )
+                }}
             >
                 <Trash />
             </TouchableOpacity>
+
+            <Modal
+                task={data}
+                onEditTask={onEditTask}
+                modalVisibility={modalVisibility}
+                onModalVisibilityChanged={setModalVisibility}
+            />
         </View>
     )
 }
@@ -63,9 +94,9 @@ const styles = StyleSheet.create({
     },
     description: {
         flex: 1,
-        maxHeight: 60,
-        overflow: 'hidden',
-        color: theme.colors.gray[100]
+        paddingVertical: 8,
+        maxHeight: 50,
+        overflow: 'hidden'
     },
     statusTask: {
         paddingLeft: 12,
