@@ -6,7 +6,8 @@ Basta clonar o repositório em uma pasta qualquer do seu computador.
 - Executar o comando no terminal: *yarn* ou *yarn install*
 
 Considerando que você já tenha o Expo-CLI instalado na sua maquina e o app do Expo Go instalado no seu smartphone, basta rodar o seguinte comando para iniciar o projeto:
-- npx expo start 
+- *npx expo start* 
+
 E com o seu smartphone, fazer a leitura do QRCode gerado com o aplicativo do Expo Go.
 
 Caso ainda não tenha o instalado, sigua os passos do link, [Expo Instalação](https://docs.expo.dev/get-started/installation/)
